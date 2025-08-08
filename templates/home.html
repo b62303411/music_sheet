@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+  {% if songs %}
+    <ul>
+      {% for song in songs %}
+        <li><a href="{{ url_for('show_song', filename=song) }}">{{ song }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No songs found.</p>
+  {% endif %}
+{% endblock %}

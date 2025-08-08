@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+#chord-popup {
+  position: absolute;
+  z-index: 9999;      /* superposé à presque tout */
+  background: #333;
+  color: #fff;
+  padding: 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4);
+  display: none;
+}
+  #chords {
+    display: flex;
+    flex-wrap: wrap;      /* Les éléments passent à la ligne si l’espace manque */
+    gap: 12px;            /* Espacement entre les diagrammes */
+    align-items: flex-start;
+  }
+  .chord-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background:#333;
+    padding:6px;
+    border-radius:4px;
+  }
+  .chord-box .name {
+    margin-bottom:4px;
+    font-weight:bold;
+    color:#fff;
+  }
+</style>
+<h2>{{ song_title }}</h2>
+<div id="chords">
+
+</div>
+<div class="controls">
+    <button onclick="transpose(-1)">Transpose -</button>
+    <button onclick="transpose(1)">Transpose +</button>
+</div>
+<pre id="song-content"></pre>
+<script id="raw-song" type="application/json">
+  {{ song_content | tojson }}
+
+</script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vexchords@1.2.0/dist/vexchords.dev.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script id="chord-data" type="application/json">
+  {{ converted | tojson }}
+</script>
+<script>
+display_chords()
+ </script>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title or "ChordieApp" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header><h1>ChordieApp</h1></header>
+    <main>
+        <div id="chord-diagram" aria-hidden="true"></div>
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

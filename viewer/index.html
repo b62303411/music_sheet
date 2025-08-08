@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Guitar Sheets</title>
+  <meta charset="UTF-8" />
+  <style>
+    body { font-family: monospace; white-space: pre; padding: 2em; background: #111; color: #eee; }
+    select, button { margin: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Guitar Sheets</h1>
+  <select id="songs" onchange="loadSong(this.value)"></select>
+  <pre id="content">Select a song...</pre>
+
+  <script>
+    async function listSongs() {
+      const res = await fetch('./songs/');
+      const text = await res.text();
+      const parser = new DOMParser();
+      const html = parser.parseFromString(text, 'text/html');
+      const links = html.querySelectorAll('a');
+      const select = document.getElementById('songs');
+      links.forEach(link => {
+        const name = link.getAttribute('href');
+        if (name.endsWith('.pro') || name.endsWith('.chord')) {
+          const opt = document.createElement('option');
+          opt.value = './songs/' + name;
+          opt.text = name;
+          select.add(opt);
+        }
+      });
+    }
+
+    async function loadSong(path) {
+      const res = await fetch(path);
+      const text = await res.text();
+      document.getElementById('content').textContent = text;
+    }
+
+    listSongs();
+  </script>
+</body>
+</html>

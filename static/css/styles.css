@@ -1,0 +1,59 @@
+body { font-family: monospace; background-color: #111; color: #eee; padding: 2em; }
+pre { white-space: pre-wrap; font-size: 1.1em; }
+.controls { margin-bottom: 1em; }
+button { margin-right: 0.5em; padding: 0.5em 1em; font-size: 1em; }
+#chord-diagram {
+    position: fixed;
+    bottom: 2em;
+    right: 2em;
+    background: #222;
+    color: #fff;
+    padding: 1em;
+    border: 1px solid #444;
+    border-radius: 6px;
+    display: none;
+    z-index: 999;
+    font-family: monospace;
+    white-space: pre;
+}
+.chord-tooltip {
+  background: #333;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4);
+  padding: 6px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+#chord-popup {
+  position: absolute;
+  z-index: 9999;
+  background: #333;        /* fond sombre */
+  color: #fff;
+  padding: 6px;
+  border-radius: 4px;
+  display: none;           /* masqué par défaut */
+}
+
+#song-content {
+  white-space: pre-wrap;
+  line-height: 1.8em;  /* 1.8 ou 2 selon la taille de la police */
+  font-size: 16px;
+}
+.chunk {
+  position: relative;
+  display: inline-block;
+  padding-top: 1.2em;      /* réserve de l’espace au-dessus pour l’accord */
+  margin-right: 0.3em;
+}
+
+.chord-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-weight: bold;
+  font-size: 0.8em;
+  color: #0cf;
+}

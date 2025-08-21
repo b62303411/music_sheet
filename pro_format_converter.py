@@ -1,47 +1,68 @@
-def convert_to_pro_format(position):
-    frets = position['frets']
-    fingers = position.get('fingers', '')
-    string_numbers = range(6, 0, -1)  # Strings 6 (low E) to 1 (high E)
+def convert_to_pro_format(position, window_size=5):
+    """
+    Inputs
+      position["frets"]: 6->1 (low E -> high E). Accepts str like 'x24432' or list ['x','2','4','4','3','2']
+      Optional:
+        position["barres"] : int absolute barre fret (e.g., 2 for Bm).  # authoritative
+        position["capo"]   : bool (styling hint only; does not affect fret math)
 
-    # Calculate base position for visual library (lowest playable fret)
-    playable_frets = [int(f, 16) for f in frets if f not in ('x', 'X', '0')]
-    base_position = min(playable_frets) if playable_frets else 1  # Default to 1 if no playable frets
+    Output (VexChords-ready)
+      {
+        "chord": [[1..6, rel_fret|'x']],            # 1 = high E ... 6 = low E
+        "position": base_fret,                      # usually 1
+        "barres": [{"fret": rel_fret, "fromString": X, "toString": Y}]
+      }
+    """
+    # --- normalize frets to list in 6->1 order ---
+    frets_6_to_1 = position["frets"]
+    if isinstance(frets_6_to_1, str):
+        frets_6_to_1 = list(frets_6_to_1)
+    if len(frets_6_to_1) != 6:
+        raise ValueError("frets must be length 6 in low-E->high-E order")
 
-    # Build chord shape with relative fret positions
+    def fret_to_int(x):
+        if x in ("x", "X"): return None
+        if isinstance(x, int) and not isinstance(x, bool):  # avoid True/False
+            return x
+        try:
+            return int(x, 16)  # allow hex
+        except Exception:
+            return int(x)
+
+    abs_frets = [fret_to_int(f) for f in frets_6_to_1]   # indices: [s6,s5,s4,s3,s2,s1]
+    playable = [f for f in abs_frets if f and f > 0]
+
+    # --- base position (diagram window), NOT capo-relative ---
+    if playable:
+        mn, mx = min(playable), max(playable)
+        base = 1 if mn <= window_size else mn
+        if (mx - base + 1) > window_size:
+            base = max(1, mx - window_size + 1)
+    else:
+        base = 1
+
+    def to_rel(f):
+        if f is None: return 'x'
+        if f == 0:   return 0
+        return f - base + 1
+
+    # --- build chord in 1->6 (high->low) order for VexChords ---
     chord = []
-    for string, fret_char in zip(string_numbers, frets):
-        if fret_char in ('x', 'X'):
-            fret = 'x'
-        else:
-            fret = int(fret_char, 16)
-            fret = fret - base_position + 1 if fret != 0 else 0  # Convert to relative, keep open strings as 0
-        chord.append([string, fret])
+    for s1 in range(1, 7):                # 1..6
+        f_abs = abs_frets[6 - s1]         # map 1->index5, 6->index0
+        chord.append([s1, to_rel(f_abs)])
 
+    # --- compute barre from absolute 'barres' (int). 'capo' is only a flag, ignored for math ---
+    barres = []
+    barre_abs = position.get("barres")
+    if isinstance(barre_abs, int) and not isinstance(barre_abs, bool) and barre_abs > 0:
+        # Which strings are actually fretted at that absolute fret?
+        strings_at_barre_1_to_6 = [s1 for s1 in range(1, 7) if abs_frets[6 - s1] == barre_abs]
+        if len(strings_at_barre_1_to_6) >= 2:
+            barres.append({
+                "fret": barre_abs - base + 1,   # relative to diagram base (so Bm -> 2)
+                "fromString": max(strings_at_barre_1_to_6),
+                "toString":  min(strings_at_barre_1_to_6),
+            })
 
-
-    # Detect barres using finger placement
-    if fingers and len(frets) == len(fingers):
-        finger_fret_map = {}
-        for string, fret_char, finger in zip(string_numbers, frets, fingers):
-            if fret_char not in ('x', 'X', '0') and finger != '0':
-                fret = int(fret_char, 16)
-                relative_fret = fret - base_position + 1  # Convert to relative
-                finger_fret_map.setdefault(finger, []).append((string, relative_fret))
-
-        barres = []
-        for finger, positions in finger_fret_map.items():
-            if len(positions) >= 2:  # At least two strings for a barre
-                frets_used = {f for _, f in positions}
-                if len(frets_used) == 1:  # Same fret across strings
-                    fret = frets_used.pop()
-                    strings = [s for s, _ in positions]
-                    barres.append({
-                        "fret": fret,
-                        "fromString": min(strings),
-                        "toString": max(strings)
-                    })
-        result = {"chord": chord, "position": base_position,"barres":barres}
-        if barres:
-            result["barres"] = barres
-
-    return result
+    return {"chord": chord, "position": base, "barres": barres}

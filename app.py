@@ -66,4 +66,4 @@ def show_song(filename):
 
 if __name__ == '__main__':
     extract_all_chords()
-    app.run(debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), threaded=True)

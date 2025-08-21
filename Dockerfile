@@ -34,6 +34,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 
 USER appuser
 # Ajuste "app:app" si ton module n’est pas app.py
-CMD exec gunicorn --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} \
-  -k gthread --timeout ${GUNICORN_TIMEOUT} \
-  --bind 0.0.0.0:${PORT} "app:app"
+ENV PORT=8000
+CMD ["python", "app.py"]

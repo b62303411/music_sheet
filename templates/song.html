@@ -49,7 +49,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vexchords@1.2.0/dist/vexchords.dev.min.js"></script>
-
+<script src="{{ url_for('static', filename='js/auto-scrole.js') }}"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script id="chord-data" type="application/json">
   {{ converted | tojson }}

@@ -5,11 +5,36 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
+<!-- Auto-scroll controls -->
+  <div class="autoscroll-ui" role="region" aria-label="Auto scroll controls">
+    <button id="playPause" aria-pressed="false">▶ Play</button>
+
+    <div class="range" title="Scroll speed in pixels per second">
+      <label for="speedRange">Speed</label>
+      <input id="speedRange" type="range" min="0" max="500" step="1" value="80" />
+      <input id="speedNum" class="num" type="number" min="0" max="9999" step="1" value="80" aria-label="Speed px/s" />
+      <span class="hint">px/s</span>
+    </div>
+
+    <div class="range" title="Scroll to bottom in this duration">
+      <label for="mmss">Duration</label>
+      <input id="mmss" class="mmss" type="text" placeholder="mm:ss" />
+      <button id="applyDur" title="Set speed from duration">Set</button>
+    </div>
+
+    <label title="Loop back to top at the end">
+      <input id="loopChk" type="checkbox" /> Loop
+    </label>
+
+    <button id="toTop" title="Jump to top">⤒ Top</button>
+  </div>
     <header><h1>ChordieApp</h1></header>
     <main>
         <div id="chord-diagram" aria-hidden="true"></div>
 
         {% block content %}{% endblock %}
     </main>
+
+
 </body>
 </html>

@@ -1,5 +1,48 @@
  // --- Demo filler (remove in your page) ---
 
+// --- Garde-l’écran allumé pendant la lecture ---
+const ScreenAwake = (() => {
+  let wl = null;            // WakeLock handle
+  let nosleep = null;       // Fallback NoSleep instance (si présent)
+  let active = false;
+
+  async function acquire() {
+    if (active) return;
+    active = true;
+
+    // 1) API native (Android Chrome, iOS 16.4+, Safari/Edge/Firefox récents)
+    if ('wakeLock' in navigator && navigator.wakeLock?.request) {
+      try {
+        wl = await navigator.wakeLock.request('screen');
+        wl.addEventListener?.('release', () => { /* écran relâché par l’OS */ });
+        return;
+      } catch (e) {
+        console.debug('WakeLock API a échoué:', e?.message || e);
+      }
+    }
+
+    // 2) Fallback NoSleep.js (à charger côté client si tu veux couvrir les vieux iOS)
+    if (window.NoSleep) {
+      if (!nosleep) nosleep = new window.NoSleep();
+      try { nosleep.enable(); return; } catch {}
+    }
+
+    console.debug('Pas de WakeLock dispo sur ce navigateur. (Ancien iOS?)');
+  }
+
+  async function release() {
+    active = false;
+    try { if (wl) { await wl.release?.(); wl = null; } } catch {}
+    try { if (nosleep) nosleep.disable(); } catch {}
+  }
+
+  // Si l’onglet revient au premier plan, on ré-acquiert (certains OS relâchent à l’arrière-plan)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && active) acquire();
+  });
+
+  return { start: acquire, stop: release };
+})();
 
     (function autoScroll(){
       'use strict';
@@ -71,6 +114,7 @@
         playPauseBtn.setAttribute('aria-pressed', 'true');
         lastTs = null;
         rafId = requestAnimationFrame(step);
+        ScreenAwake.start();
       }
 
       function pause(){
@@ -79,6 +123,7 @@
         playPauseBtn.setAttribute('aria-pressed', 'false');
         if (rafId) cancelAnimationFrame(rafId);
         rafId = null; lastTs = null;
+        ScreenAwake.stop();
       }
 
       function toggle(){ running ? pause() : play(); }
